@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" rx="96" fill="#3B82F6"/>
+  <rect x="128" y="128" width="160" height="16" rx="8" fill="white" opacity="0.9"/>
+  <rect x="128" y="168" width="256" height="16" rx="8" fill="white" opacity="0.7"/>
+  <rect x="128" y="208" width="224" height="16" rx="8" fill="white" opacity="0.7"/>
+  <rect x="128" y="264" width="112" height="12" rx="6" fill="white" opacity="0.9"/>
+  <rect x="128" y="292" width="256" height="10" rx="5" fill="white" opacity="0.5"/>
+  <rect x="128" y="314" width="240" height="10" rx="5" fill="white" opacity="0.5"/>
+  <rect x="128" y="336" width="200" height="10" rx="5" fill="white" opacity="0.5"/>
+  <rect x="128" y="372" width="96" height="12" rx="6" fill="white" opacity="0.9"/>
+  <rect x="128" y="396" width="256" height="10" rx="5" fill="white" opacity="0.5"/>
+  <!-- Sparkle / AI indicator -->
+  <circle cx="368" cy="144" r="32" fill="white" opacity="0.15"/>
+  <path d="M368 120 L372 140 L392 144 L372 148 L368 168 L364 148 L344 144 L364 140 Z" fill="white"/>
+</svg>

@@ -1,0 +1,831 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String   @id @default(cuid())
+  name          String
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  role          String   @default("user")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+  resumes        Resume[]
+  profile        Profile?
+  notifications  Notification[]
+  activities     ResumeActivity[]
+  aiCredit       AICredit?
+  aiGenerations  AIGeneration[]
+  coverLetters   CoverLetter[]
+  atsAnalyses    ATSAnalysis[]
+  jobMatches     JobMatch[]
+  chatMessages   AIChatMessage[]
+  designPresets  DesignPreset[]
+  shareLinks        ShareLink[]
+  downloads         Download[]
+  resumeHealths     ResumeHealth[]
+  careerSuggestions CareerSuggestion[]
+  interviewPreps    InterviewPrep[]
+  skillGaps         SkillGap[]
+  resumeComparisons ResumeComparison[]
+  resumeImports     ResumeImport[]
+  importHistories   ImportHistory[]
+  recoveredDrafts   RecoveredDraft[]
+  searchHistories   SearchHistory[]
+}
+
+model Account {
+  id                    String    @id @default(cuid())
+  userId                String
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, value])
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  headline  String?
+  phone     String?
+  location  String?
+  website   String?
+  portfolio String?
+  github    String?
+  linkedin  String?
+  twitter   String?
+  bio       String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Resume {
+  id            String  @id @default(cuid())
+  userId        String
+  title         String
+  slug          String  @unique
+  template      String  @default("modern")
+  isPublic      Boolean @default(false)
+  isFavorite    Boolean @default(false)
+  isArchived    Boolean @default(false)
+  thumbnailUrl  String?
+  atsScore      Int     @default(0)
+  downloadCount Int     @default(0)
+  viewCount     Int     @default(0)
+  aiCreditsUsed Int     @default(0)
+
+  summary   String?
+  fullName  String?
+  headline  String?
+  email     String?
+  phone     String?
+  location  String?
+  website   String?
+  portfolio String?
+  github    String?
+  linkedin  String?
+  twitter   String?
+  photoUrl  String?
+
+  themeColor     String  @default("#3B82F6")
+  fontFamily     String  @default("inter")
+  fontSize       Int     @default(14)
+  lineHeight     Float   @default(1.5)
+  pageMargin     Int     @default(40)
+  headerStyle    String  @default("classic")
+  showIcons      Boolean @default(true)
+  secondaryColor String  @default("#1E293B")
+  accentColor    String  @default("#3B82F6")
+  photoShape     String  @default("circle")
+  sectionStyle   String  @default("line")
+  borderRadius   Int     @default(4)
+  showDividers   Boolean @default(true)
+  columnLayout   String  @default("single")
+  watermark      Boolean @default(true)
+
+  sectionOrder Json @default("[\"summary\",\"experience\",\"education\",\"skills\",\"projects\",\"certifications\",\"languages\",\"awards\",\"achievements\",\"volunteer\",\"publications\",\"interests\",\"references\"]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workExperiences WorkExperience[]
+  educations      Education[]
+  skills          Skill[]
+  projects        Project[]
+  certifications  Certification[]
+  languages       Language[]
+  awards          Award[]
+  achievements    Achievement[]
+  volunteerWork   VolunteerWork[]
+  publications    Publication[]
+  interests       Interest[]
+  references      Reference[]
+  customSections  CustomSection[]
+  versions        ResumeVersion[]
+  activities      ResumeActivity[]
+  atsAnalyses     ATSAnalysis[]
+  jobMatches      JobMatch[]
+  shareLinks        ShareLink[]
+  views             ResumeView[]
+  downloads         Download[]
+  resumeHealths     ResumeHealth[]
+  careerSuggestions CareerSuggestion[]
+  interviewPreps    InterviewPrep[]
+  skillGaps         SkillGap[]
+  imports           ResumeImport[]
+}
+
+model WorkExperience {
+  id             String   @id @default(cuid())
+  resumeId       String
+  company        String
+  position       String
+  location       String?
+  employmentType String?
+  startDate      String
+  endDate        String?
+  current        Boolean  @default(false)
+  description    String?
+  achievements   Json     @default("[]")
+  technologies   Json     @default("[]")
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Education {
+  id           String   @id @default(cuid())
+  resumeId     String
+  institution  String
+  degree       String
+  fieldOfStudy String?
+  location     String?
+  startDate    String
+  endDate      String?
+  current      Boolean  @default(false)
+  gpa          String?
+  description  String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Skill {
+  id        String     @id @default(cuid())
+  resumeId  String
+  name      String
+  category  String?
+  level     SkillLevel @default(INTERMEDIATE)
+  rating    Int        @default(3)
+  order     Int        @default(0)
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  resumeId     String
+  name         String
+  description  String?
+  url          String?
+  github       String?
+  technologies Json     @default("[]")
+  images       Json     @default("[]")
+  startDate    String?
+  endDate      String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Certification {
+  id           String   @id @default(cuid())
+  resumeId     String
+  name         String
+  issuer       String
+  issueDate    String
+  expiryDate   String?
+  credentialId String?
+  url          String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Language {
+  id          String   @id @default(cuid())
+  resumeId    String
+  name        String
+  proficiency String   @default("Conversational")
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Award {
+  id          String   @id @default(cuid())
+  resumeId    String
+  title       String
+  issuer      String?
+  date        String?
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id          String   @id @default(cuid())
+  resumeId    String
+  title       String
+  description String?
+  date        String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model VolunteerWork {
+  id           String   @id @default(cuid())
+  resumeId     String
+  organization String
+  role         String
+  startDate    String?
+  endDate      String?
+  current      Boolean  @default(false)
+  description  String?
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Publication {
+  id          String   @id @default(cuid())
+  resumeId    String
+  title       String
+  publisher   String?
+  date        String?
+  url         String?
+  description String?
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Interest {
+  id        String   @id @default(cuid())
+  resumeId  String
+  name      String
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model Reference {
+  id        String   @id @default(cuid())
+  resumeId  String
+  name      String
+  company   String?
+  position  String?
+  phone     String?
+  email     String?
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model CustomSection {
+  id        String   @id @default(cuid())
+  resumeId  String
+  title     String
+  content   Json     @default("[]")
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model ResumeVersion {
+  id        String   @id @default(cuid())
+  resumeId  String
+  label     String
+  snapshot  Json
+  createdAt DateTime @default(now())
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+}
+
+model ShareLink {
+  id          String         @id @default(cuid())
+  resumeId    String
+  userId      String
+  token       String         @unique @default(cuid())
+  label       String         @default("Share Link")
+  visibility  LinkVisibility @default(PUBLIC)
+  password    String?
+  expiresAt   DateTime?
+  maxViews    Int?
+  viewCount   Int            @default(0)
+  isActive    Boolean        @default(true)
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  resume      Resume       @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  user        User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  views       ResumeView[]
+
+  @@index([token])
+  @@index([resumeId])
+  @@index([userId])
+}
+
+model ResumeView {
+  id          String    @id @default(cuid())
+  resumeId    String
+  shareLinkId String?
+  ip          String?
+  userAgent   String?
+  country     String?
+  device      String?
+  referrer    String?
+  createdAt   DateTime  @default(now())
+
+  resume    Resume     @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  shareLink ShareLink? @relation(fields: [shareLinkId], references: [id], onDelete: SetNull)
+
+  @@index([resumeId])
+  @@index([shareLinkId])
+  @@index([createdAt])
+}
+
+model Download {
+  id        String         @id @default(cuid())
+  resumeId  String
+  userId    String
+  format    DownloadFormat
+  ip        String?
+  userAgent String?
+  createdAt DateTime       @default(now())
+
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([resumeId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model DesignPreset {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  template  String   @default("modern")
+  themeJson Json
+  isGlobal  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Notification {
+  id        String           @id @default(cuid())
+  userId    String
+  title     String
+  body      String
+  type      NotificationType @default(INFO)
+  isRead    Boolean          @default(false)
+  href      String?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ResumeActivity {
+  id        String         @id @default(cuid())
+  userId    String
+  resumeId  String?
+  action    ActivityAction
+  metadata  Json?
+  createdAt DateTime       @default(now())
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume? @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+}
+
+model AICredit {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  plan         String   @default("free")
+  monthlyLimit Int      @default(20)
+  used         Int      @default(0)
+  cycleStart   DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model AIGeneration {
+  id           String        @id @default(cuid())
+  userId       String
+  resumeId     String?
+  feature      AIFeatureType
+  prompt       String
+  input        Json?
+  output       Json?
+  model        String        @default("gemini-2.5-flash")
+  tokensUsed   Int           @default(0)
+  status       AIJobStatus   @default(COMPLETED)
+  errorMessage String?
+  createdAt    DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, feature])
+  @@index([userId, createdAt])
+}
+
+model CoverLetter {
+  id             String   @id @default(cuid())
+  userId         String
+  resumeId       String?
+  jobTitle       String
+  company        String
+  jobDescription String?
+  tone           String   @default("professional")
+  content        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model ATSAnalysis {
+  id              String   @id @default(cuid())
+  userId          String
+  resumeId        String
+  jobDescription  String?
+  score           Int
+  keywordsFound   Json?
+  keywordsMissing Json?
+  suggestions     Json?
+  summary         String?
+  createdAt       DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model JobMatch {
+  id              String   @id @default(cuid())
+  userId          String
+  resumeId        String
+  jobTitle        String
+  company         String?
+  jobDescription  String
+  matchScore      Int
+  matchedSkills   Json?
+  missingSkills   Json?
+  recommendations Json?
+  createdAt       DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model ResumeHealth {
+  id               String   @id @default(cuid())
+  userId           String
+  resumeId         String
+  overallScore     Int
+  formattingScore  Int
+  contentScore     Int
+  keywordScore     Int
+  grammarScore     Int
+  readabilityScore Int
+  recruiterScore   Int
+  weakSections     Json     @default("[]")
+  strongSections   Json     @default("[]")
+  longSentences    Json     @default("[]")
+  passiveVoice     Json     @default("[]")
+  actionVerbsUsed  Json     @default("[]")
+  buzzwords        Json     @default("[]")
+  grammarIssues    Json     @default("[]")
+  suggestions      Json     @default("[]")
+  createdAt        DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model CareerSuggestion {
+  id              String   @id @default(cuid())
+  userId          String
+  resumeId        String
+  careerPaths     Json     @default("[]")
+  salaryRange     Json     @default("{}")
+  popularSkills   Json     @default("[]")
+  trendingTech    Json     @default("[]")
+  certifications  Json     @default("[]")
+  learningRoadmap Json     @default("[]")
+  createdAt       DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model InterviewPrep {
+  id          String   @id @default(cuid())
+  userId      String
+  resumeId    String
+  jobTitle    String
+  technical   Json     @default("[]")
+  behavioral  Json     @default("[]")
+  hr          Json     @default("[]")
+  createdAt   DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model SkillGap {
+  id            String   @id @default(cuid())
+  userId        String
+  resumeId      String
+  targetRole    String
+  matchScore    Int      @default(0)
+  missingSkills Json     @default("[]")
+  courses       Json     @default("[]")
+  roadmap       Json     @default("[]")
+  createdAt     DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume Resume @relation(fields: [resumeId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model ResumeComparison {
+  id             String   @id @default(cuid())
+  userId         String
+  resumeId1      String
+  resumeId2      String
+  resume1Score   Int
+  resume2Score   Int
+  winner         String
+  recommendation String
+  differences    Json     @default("[]")
+  improvements   Json     @default("[]")
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model AIChatMessage {
+  id        String   @id @default(cuid())
+  userId    String
+  sessionId String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, sessionId])
+}
+
+model ResumeImport {
+  id           String       @id @default(cuid())
+  userId       String
+  fileName     String
+  fileType     String
+  fileSize     Int
+  status       ImportStatus @default(PENDING)
+  rawText      String?
+  parsedData   Json?
+  aiEnhanced   Json?
+  resumeId     String?
+  errorMessage String?
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resume  Resume?         @relation(fields: [resumeId], references: [id], onDelete: SetNull)
+  history ImportHistory[]
+
+  @@index([userId])
+  @@index([resumeId])
+}
+
+model ImportHistory {
+  id        String   @id @default(cuid())
+  importId  String
+  userId    String
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  import ResumeImport @relation(fields: [importId], references: [id], onDelete: Cascade)
+  user   User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([importId])
+  @@index([userId])
+}
+
+model RecoveredDraft {
+  id        String   @id @default(cuid())
+  userId    String
+  resumeId  String?
+  title     String
+  data      Json
+  source    String   @default("autosave")
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model SearchHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  query       String
+  category    String?
+  resultCount Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum AIFeatureType {
+  RESUME_GENERATE
+  SUMMARY_GENERATE
+  EXPERIENCE_BULLETS
+  SKILLS_SUGGEST
+  PROJECT_DESCRIBE
+  ACHIEVEMENT_WRITE
+  COVER_LETTER
+  ATS_ANALYSIS
+  JOB_MATCH
+  CHAT_ASSISTANT
+  RESUME_HEALTH
+  CAREER_INTELLIGENCE
+  INTERVIEW_PREP
+  SKILL_GAP
+  RESUME_COMPARISON
+}
+
+enum AIJobStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}
+
+enum SkillLevel {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+  EXPERT
+}
+
+enum NotificationType {
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum ActivityAction {
+  RESUME_CREATED
+  RESUME_UPDATED
+  RESUME_DELETED
+  RESUME_DOWNLOADED
+  RESUME_SHARED
+  RESUME_DUPLICATED
+  RESUME_ARCHIVED
+  PROFILE_UPDATED
+  VERSION_CREATED
+  VERSION_RESTORED
+  RESUME_IMPORTED
+}
+
+enum ImportStatus {
+  PENDING
+  PARSING
+  PARSED
+  IMPORTING
+  COMPLETED
+  FAILED
+}
+
+enum LinkVisibility {
+  PUBLIC
+  PRIVATE
+  PASSWORD
+}
+
+enum DownloadFormat {
+  PDF
+  DOCX
+  TXT
+}
