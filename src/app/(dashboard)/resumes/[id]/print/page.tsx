@@ -5,6 +5,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { PrintClient } from "@/components/resume/print-client";
 import type { ResumeData } from "@/types/resume";
+import type { Prisma } from "@prisma/client";
 
 export const metadata: Metadata = {
   title: "Print Resume — ResumeAI",
@@ -15,7 +16,24 @@ interface Props {
   searchParams: Promise<{ size?: string }>;
 }
 
-function buildPrintData(resume: Awaited<ReturnType<typeof loadResume>>): ResumeData {
+type LoadedResume = Prisma.ResumeGetPayload<{
+  include: {
+    workExperiences: true;
+    educations: true;
+    skills: true;
+    projects: true;
+    certifications: true;
+    languages: true;
+    awards: true;
+    achievements: true;
+    volunteerWork: true;
+    interests: true;
+    references: true;
+    customSections: true;
+  };
+}>;
+
+function buildPrintData(resume: LoadedResume): ResumeData {
   if (!resume) throw new Error("No resume");
   return {
     id: resume.id,
